@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: ./backend
+    container_name: tpshop-test
+    volumes:
+      - ./backend:/app
+    environment:
+      - TEST_URL=http://host.docker.internal:8080
+      - HEADLESS=true
+    working_dir: /app
