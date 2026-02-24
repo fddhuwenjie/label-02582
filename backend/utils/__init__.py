@@ -1,6 +1,9 @@
 """
 工具模块初始化
 """
-from utils.driver import UtilsDriver
-
-__all__ = ['UtilsDriver']
+# 仅在selenium可用时导入
+try:
+    from utils.driver import UtilsDriver
+    __all__ = ['UtilsDriver']
+except ImportError:
+    __all__ = []

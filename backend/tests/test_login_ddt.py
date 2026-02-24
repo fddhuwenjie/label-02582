@@ -1,12 +1,13 @@
 """
-登录功能测试用例
-使用 pytest + 参数化实现数据驱动
+登录功能测试用例 - 使用DDT库实现数据驱动
+符合实验要求：使用DDT库从JSON文件读取测试数据
 """
-import pytest
+import unittest
 import json
 import os
 import logging
 import time
+from ddt import ddt, data, unpack, file_data
 from utils.driver import UtilsDriver
 from pages.home_page import HomePageHandle
 from pages.login_page import LoginPageHandle
@@ -27,33 +28,37 @@ def load_test_data():
         return json.load(f)
 
 
-class TestLogin:
-    """登录功能测试类"""
+@ddt
+class TestLoginDDT(unittest.TestCase):
+    """
+    登录功能测试类 - 使用DDT数据驱动
+    DDT (Data-Driven Tests) 库实现数据驱动测试
+    """
     
     @classmethod
-    def setup_class(cls):
+    def setUpClass(cls):
         """测试类初始化"""
-        logger.info("=" * 50)
-        logger.info("开始登录功能测试")
-        logger.info("=" * 50)
+        logger.info("=" * 60)
+        logger.info("开始登录功能测试 (DDT数据驱动)")
+        logger.info("=" * 60)
         cls.driver = UtilsDriver.get_driver()
         cls.home_handle = HomePageHandle(cls.driver)
         cls.login_handle = LoginPageHandle(cls.driver)
         cls.test_results = []
     
     @classmethod
-    def teardown_class(cls):
+    def tearDownClass(cls):
         """测试类清理"""
-        logger.info("=" * 50)
+        logger.info("=" * 60)
         logger.info("登录功能测试结束")
         logger.info(f"测试结果汇总: {len(cls.test_results)} 个用例")
         for result in cls.test_results:
             status = "✓ 通过" if result['passed'] else "✗ 失败"
             logger.info(f"  {result['case_id']}: {status}")
-        logger.info("=" * 50)
+        logger.info("=" * 60)
         UtilsDriver.quit_driver()
     
-    def setup_method(self):
+    def setUp(self):
         """每个测试方法前执行"""
         try:
             UtilsDriver.navigate_to(BASE_URL)
@@ -63,6 +68,10 @@ class TestLogin:
         except Exception as e:
             logger.error(f"测试准备失败: {e}")
             self.take_screenshot("setup_error")
+    
+    def tearDown(self):
+        """每个测试方法后执行"""
+        pass
     
     def take_screenshot(self, name):
         """截图保存"""
@@ -77,11 +86,12 @@ class TestLogin:
             logger.error(f"截图失败: {e}")
             return None
     
-    @pytest.mark.parametrize("test_data", load_test_data(), ids=lambda x: x['case_id'])
+    @data(*load_test_data())
     def test_login(self, test_data):
         """
         登录功能测试
-        使用 pytest parametrize 实现数据驱动，从 JSON 文件读取测试数据
+        使用 DDT 库的 @data 装饰器实现数据驱动
+        从 JSON 文件读取测试数据
         """
         case_id = test_data['case_id']
         description = test_data['description']
@@ -115,11 +125,11 @@ class TestLogin:
             
             # 断言
             if expected == "success":
-                assert result['success'] == True, f"期望登录成功，实际: {result['message']}"
+                self.assertTrue(result['success'], f"期望登录成功，实际: {result['message']}")
                 test_passed = True
                 logger.info(f"✓ 测试通过: {case_id} - 登录成功")
             else:
-                assert result['success'] == False, f"期望登录失败，实际登录成功"
+                self.assertFalse(result['success'], f"期望登录失败，实际登录成功")
                 test_passed = True
                 logger.info(f"✓ 测试通过: {case_id} - 登录失败(符合预期)")
                 
@@ -144,4 +154,5 @@ class TestLogin:
 
 
 if __name__ == '__main__':
-    pytest.main(['-v', '-s', __file__, '--html=reports/login_report.html'])
+    # 使用unittest运行DDT测试
+    unittest.main(verbosity=2)

@@ -1,0 +1,56 @@
+
+================================================================================
+                    LoginPage - 登录页面对象
+                    文件: backend/pages/login_page.py
+================================================================================
+
+class LoginPageLocator:
+    """登录页面元素定位器"""
+    USERNAME_INPUT = (By.NAME, "username")
+    PASSWORD_INPUT = (By.NAME, "password")
+    VERIFY_CODE_INPUT = (By.NAME, "verify_code")
+    LOGIN_BTN = (By.XPATH, "//a[@name='sbtbutton']")
+    ERROR_MSG = (By.CLASS_NAME, "error-msg")
+    SUCCESS_MSG = (By.CLASS_NAME, "username")
+
+
+class LoginPage(BasePage):
+    """登录页面类 - 继承BasePage"""
+    
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.locator = LoginPageLocator()
+    
+    def get_username_input(self):
+        return self.find_element_by_name(self.locator.USERNAME_INPUT[1])
+    
+    def get_password_input(self):
+        return self.find_element_by_name(self.locator.PASSWORD_INPUT[1])
+    
+    def get_verify_code_input(self):
+        return self.find_element_by_name(self.locator.VERIFY_CODE_INPUT[1])
+
+
+class LoginPageHandle(BaseHandle):
+    """登录页面操作处理类 - 继承BaseHandle"""
+    
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.page = LoginPage(driver)
+    
+    def login(self, username, password, verify_code=None):
+        """执行登录操作"""
+        code = verify_code if verify_code else UNIVERSAL_VERIFY_CODE
+        self.input_username(username)
+        self.input_password(password)
+        self.input_verify_code(code)
+        self.click_login()
+    
+    def get_login_result(self):
+        """获取登录结果"""
+        error = self.page.get_error_msg()
+        if error and self.is_element_displayed(error):
+            return {"success": False, "message": self.get_element_text(error)}
+        return {"success": True, "message": "登录成功"}
+
+================================================================================

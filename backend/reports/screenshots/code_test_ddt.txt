@@ -1,0 +1,63 @@
+
+================================================================================
+                    DDT数据驱动测试用例
+                    文件: backend/tests/test_login_ddt.py
+================================================================================
+
+from ddt import ddt, data
+
+def load_test_data():
+    """从JSON文件加载测试数据"""
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'login_data.json')
+    with open(data_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
+@ddt
+class TestLoginDDT(unittest.TestCase):
+    """登录功能测试类 - 使用DDT数据驱动"""
+    
+    @classmethod
+    def setUpClass(cls):
+        cls.driver = UtilsDriver.get_driver()
+        cls.home_handle = HomePageHandle(cls.driver)
+        cls.login_handle = LoginPageHandle(cls.driver)
+    
+    @classmethod
+    def tearDownClass(cls):
+        UtilsDriver.quit_driver()
+    
+    def setUp(self):
+        UtilsDriver.navigate_to(BASE_URL)
+        self.home_handle.click_login()
+    
+    @data(*load_test_data())
+    def test_login(self, test_data):
+        """
+        登录功能测试
+        使用DDT库的@data装饰器实现数据驱动
+        从JSON文件读取测试数据
+        """
+        case_id = test_data['case_id']
+        username = test_data['username']
+        password = test_data['password']
+        verify_code = test_data.get('verify_code', '8888')
+        expected = test_data['expected']
+        
+        # 截图：登录前
+        self.take_screenshot(f"{case_id}_before_login")
+        
+        # 执行登录
+        self.login_handle.login(username, password, verify_code)
+        
+        # 截图：登录后
+        self.take_screenshot(f"{case_id}_after_login")
+        
+        # 获取结果并断言
+        result = self.login_handle.get_login_result()
+        if expected == "success":
+            self.assertTrue(result['success'])
+        else:
+            self.assertFalse(result['success'])
+
+================================================================================

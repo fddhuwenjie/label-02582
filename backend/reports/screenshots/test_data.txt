@@ -1,0 +1,58 @@
+
+================================================================================
+                    DDT测试数据
+                    文件: backend/data/login_data.json
+================================================================================
+
+[
+  {
+    "case_id": "TC001",
+    "description": "正确用户名和密码登录",
+    "username": "13800138000",
+    "password": "123456",
+    "verify_code": "8888",
+    "expected": "success"
+  },
+  {
+    "case_id": "TC002",
+    "description": "用户名为空",
+    "username": "",
+    "password": "123456",
+    "verify_code": "8888",
+    "expected": "fail"
+  },
+  {
+    "case_id": "TC003",
+    "description": "密码为空",
+    "username": "13800138000",
+    "password": "",
+    "verify_code": "8888",
+    "expected": "fail"
+  },
+  {
+    "case_id": "TC004",
+    "description": "错误的用户名",
+    "username": "wronguser",
+    "password": "123456",
+    "verify_code": "8888",
+    "expected": "fail"
+  },
+  {
+    "case_id": "TC005",
+    "description": "错误的密码",
+    "username": "13800138000",
+    "password": "wrongpassword",
+    "verify_code": "8888",
+    "expected": "fail"
+  },
+  {
+    "case_id": "TC006",
+    "description": "验证码为空",
+    "username": "13800138000",
+    "password": "123456",
+    "verify_code": "",
+    "expected": "fail"
+  }
+]
+
+================================================================================

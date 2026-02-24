@@ -1,4 +1,6 @@
-selenium>=4.15.0
+selenium>=4.0.0
+pytest>=7.0.0
+pytest-html>=3.2.0
 webdriver-manager>=4.0.0
-pytest>=7.4.0
-pytest-html>=4.1.0
+ddt>=1.6.0
+pytest-cov>=4.0.0

@@ -1,0 +1,37 @@
+
+================================================================================
+                        TPshop 商城自动化测试项目结构
+================================================================================
+
+backend/
+├── utils/
+│   ├── __init__.py
+│   └── driver.py              # UtilsDriver 浏览器驱动工具类（单例模式）
+├── pages/
+│   ├── __init__.py
+│   ├── base_page.py           # BasePage 页面元素定位基类
+│   │                          # BaseHandle 页面操作处理基类
+│   ├── home_page.py           # HomePage 商城首页页面对象
+│   │                          # HomePageHandle 首页操作处理类
+│   └── login_page.py          # LoginPage 登录页面对象
+│                              # LoginPageHandle 登录页面操作处理类
+├── data/
+│   └── login_data.json        # DDT测试数据（6个测试用例）
+├── tests/
+│   ├── __init__.py
+│   ├── test_login.py          # pytest参数化测试用例
+│   └── test_login_ddt.py      # DDT库数据驱动测试用例
+├── reports/
+│   ├── screenshots/           # 测试截图目录
+│   └── test_report.html       # HTML测试报告
+├── docs/
+│   ├── TPSHOP_DEPLOY.md       # TPshop部署指南
+│   └── TEST_ANALYSIS.md       # 测试结果分析
+├── config.py                  # 配置文件（环境变量支持）
+├── conftest.py                # pytest配置
+├── main.py                    # 主程序入口
+├── requirements.txt           # 依赖包列表
+├── generate_screenshots.py    # 截图生成脚本
+└── Dockerfile
+
+================================================================================
