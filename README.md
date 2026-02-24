@@ -2,18 +2,46 @@
 
 基于 PO（Page Object）设计模式 + DDT 数据驱动的自动化测试框架，支持多种商城系统的登录功能测试。
 
-## ⚠️ 重要说明
+## ⚠️ 测试环境说明
 
-本项目是一个**通用的商城登录自动化测试框架**，支持以下商城系统：
+**重要**：本项目是一个**自动化测试框架**，需要用户自行准备商城测试环境。
 
-| 商城系统 | 配置名称 | 说明 |
-|----------|----------|------|
-| TPshop | `tpshop` | 默认配置，需要自行部署 |
-| ShopXO | `shopxo` | 开源商城，需要自行部署 |
-| LikeShop | `likeshop` | 开源商城，需要自行部署 |
-| 自定义 | `custom` | 可配置任意商城 |
+### 环境要求
 
-**注意**：由于公开演示站点不稳定或不可用，本项目需要用户自行部署商城环境进行测试。
+| 组件 | 要求 |
+|------|------|
+| Python | 3.8+ |
+| Chrome | 最新版本 |
+| 商城环境 | TPshop / ShopXO / 其他 |
+
+### 测试环境类型
+
+1. **真实环境测试**（推荐）
+   - 部署 TPshop 商城（Docker 或本地）
+   - 配置万能验证码
+   - 创建测试账号
+   - 运行完整测试用例
+
+2. **演示模式**（无需商城）
+   - 运行 `python main.py --demo`
+   - 查看框架结构和设计说明
+   - 不执行实际浏览器操作
+
+### TPshop Docker 部署（推荐）
+
+```bash
+# 1. 拉取 TPshop Docker 镜像
+docker pull tpshop/tpshop:latest
+
+# 2. 启动容器
+docker run -d -p 8080:80 --name tpshop tpshop/tpshop:latest
+
+# 3. 访问 http://localhost:8080 完成安装
+# 4. 后台配置万能验证码为 8888
+# 5. 注册测试账号 13800138000/123456
+```
+
+如果官方镜像不可用，可参考 `docs/TPSHOP_DEPLOY.md` 手动部署。
 
 ## 🔧 快速配置
 
@@ -94,14 +122,49 @@ pip install -r requirements.txt
 # 演示模式（无需商城环境）
 python main.py --demo
 
-# 运行 pytest 测试
+# 运行 pytest 测试（需要商城环境）
 pytest tests/test_login.py -v --html=reports/test_report.html
 
 # 运行 DDT 测试
 python -m pytest tests/test_login_ddt.py -v
 
 # 指定商城类型运行
-SHOP_TYPE=shopxo pytest tests/test_login.py -v
+SHOP_TYPE=tpshop TEST_URL=http://localhost:8080 pytest tests/test_login.py -v
+```
+
+### 4. 查看测试报告
+
+测试完成后，报告生成在 `reports/` 目录：
+- `test_report.html` - HTML 格式测试报告
+- `screenshots/` - 测试过程截图
+
+## 📸 测试截图说明
+
+测试运行时会自动截图保存到 `reports/screenshots/` 目录：
+
+| 截图 | 说明 |
+|------|------|
+| `TC001_before_login.png` | 登录前页面 |
+| `TC001_after_login.png` | 登录后页面 |
+| `TC002_error.png` | 错误提示截图 |
+
+## 📊 测试报告示例
+
+运行测试后，打开 `reports/test_report.html` 查看：
+
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.9.8, pytest-8.4.2
+collected 6 items
+
+tests/test_login.py::TestLogin::test_login[TC001] PASSED
+tests/test_login.py::TestLogin::test_login[TC002] PASSED
+tests/test_login.py::TestLogin::test_login[TC003] PASSED
+tests/test_login.py::TestLogin::test_login[TC004] PASSED
+tests/test_login.py::TestLogin::test_login[TC005] PASSED
+tests/test_login.py::TestLogin::test_login[TC006] PASSED
+
+============================== 6 passed in 45.23s ==============================
 ```
 
 ## 📁 项目结构
