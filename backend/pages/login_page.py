@@ -1,26 +1,46 @@
 """
 LoginPage - 登录页面对象
+支持多种商城系统（TPshop、ShopXO、LikeShop等）
 """
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage, BaseHandle
-from config import UNIVERSAL_VERIFY_CODE
 import logging
 import time
+
+# 尝试导入新配置，兼容旧配置
+try:
+    from shop_config import SHOP_CONFIG, UNIVERSAL_VERIFY_CODE
+except ImportError:
+    from config import UNIVERSAL_VERIFY_CODE
+    SHOP_CONFIG = None
 
 logger = logging.getLogger(__name__)
 
 
 class LoginPageLocator:
-    """登录页面元素定位器"""
-    USERNAME_INPUT = (By.NAME, "username")
-    PASSWORD_INPUT = (By.NAME, "password")
-    VERIFY_CODE_INPUT = (By.NAME, "verify_code")
-    LOGIN_BTN = (By.XPATH, "//a[@name='sbtbutton']")
-    ERROR_MSG = (By.CLASS_NAME, "error-msg")
-    SUCCESS_MSG = (By.CLASS_NAME, "username")
-    # 备用定位器
-    LOGIN_BTN_ALT = (By.CSS_SELECTOR, "a.btn-login")
-    VERIFY_CODE_IMG = (By.ID, "verify_code_img")
+    """登录页面元素定位器 - 根据商城配置动态设置"""
+    
+    def __init__(self):
+        if SHOP_CONFIG and "locators" in SHOP_CONFIG:
+            loc = SHOP_CONFIG["locators"]
+            self.USERNAME_INPUT = (By.NAME, loc.get("username_input", "username"))
+            self.PASSWORD_INPUT = (By.NAME, loc.get("password_input", "password"))
+            self.VERIFY_CODE_INPUT = (By.NAME, loc.get("verify_code_input", "verify_code"))
+            self.LOGIN_BTN = (By.XPATH, loc.get("login_button", "//button[@type='submit']"))
+            self.ERROR_MSG = (By.CLASS_NAME, loc.get("error_message", "error-msg"))
+            self.SUCCESS_INDICATOR = (By.XPATH, loc.get("success_indicator", "//a[contains(text(),'退出')]"))
+        else:
+            # 默认 TPshop 定位器
+            self.USERNAME_INPUT = (By.NAME, "username")
+            self.PASSWORD_INPUT = (By.NAME, "password")
+            self.VERIFY_CODE_INPUT = (By.NAME, "verify_code")
+            self.LOGIN_BTN = (By.XPATH, "//a[@name='sbtbutton']")
+            self.ERROR_MSG = (By.CLASS_NAME, "error-msg")
+            self.SUCCESS_INDICATOR = (By.XPATH, "//a[contains(text(),'退出')]")
+        
+        # 备用定位器
+        self.LOGIN_BTN_ALT = (By.CSS_SELECTOR, "a.btn-login, button.btn-login, input[type='submit']")
+        self.VERIFY_CODE_IMG = (By.ID, "verify_code_img")
 
 
 class LoginPage(BasePage):
@@ -29,6 +49,7 @@ class LoginPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
         self.locator = LoginPageLocator()
+        self.shop_config = SHOP_CONFIG
     
     def get_username_input(self):
         """获取用户名输入框"""
@@ -40,6 +61,8 @@ class LoginPage(BasePage):
     
     def get_verify_code_input(self):
         """获取验证码输入框"""
+        if self.shop_config and not self.shop_config.get("verify_code_enabled", True):
+            return None
         return self.find_element_by_name(self.locator.VERIFY_CODE_INPUT[1])
     
     def get_login_btn(self):

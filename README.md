@@ -1,53 +1,110 @@
-# TPshop 商城登录功能自动化测试
+# 商城登录功能自动化测试
 
-基于 PO（Page Object）设计模式 + DDT 数据驱动的自动化测试框架，实现 TPshop 开源商城网站的登录功能测试。
+基于 PO（Page Object）设计模式 + DDT 数据驱动的自动化测试框架，支持多种商城系统的登录功能测试。
 
-## ⚠️ 环境依赖说明
+## ⚠️ 重要说明
 
-**重要**：本项目需要以下环境才能运行真实测试：
+本项目是一个**通用的商城登录自动化测试框架**，支持以下商城系统：
 
-1. **TPshop 商城**：需要部署 TPshop 开源商城（详见 `docs/TPSHOP_DEPLOY.md`）
-2. **万能验证码**：需要在 TPshop 后台配置万能验证码 `8888`
-3. **测试账号**：需要在 TPshop 中注册测试账号 `13800138000/123456`
-4. **Chrome 浏览器**：需要安装 Chrome 浏览器
+| 商城系统 | 配置名称 | 说明 |
+|----------|----------|------|
+| TPshop | `tpshop` | 默认配置，需要自行部署 |
+| ShopXO | `shopxo` | 开源商城，需要自行部署 |
+| LikeShop | `likeshop` | 开源商城，需要自行部署 |
+| 自定义 | `custom` | 可配置任意商城 |
 
-如果没有 TPshop 环境，可以运行 `python main.py --demo` 查看框架结构和设计说明。
+**注意**：由于公开演示站点不稳定或不可用，本项目需要用户自行部署商城环境进行测试。
 
-## 验证码处理方案
+## 🔧 快速配置
 
-TPshop 商城使用图形验证码，本项目采用**万能验证码**方案：
-
-### 配置步骤
-
-1. 登录 TPshop 后台管理系统
-2. 进入 **系统设置 → 网站设置**
-3. 找到 **万能验证码** 配置项
-4. 设置为 `8888`（或其他自定义值）
-
-### 代码配置
-
-```python
-# config.py
-UNIVERSAL_VERIFY_CODE = os.getenv("VERIFY_CODE", "8888")
-```
-
-### 环境变量覆盖
+### 方式一：环境变量配置
 
 ```bash
-export VERIFY_CODE="8888"  # 可自定义
+# 选择商城类型
+export SHOP_TYPE="tpshop"  # tpshop, shopxo, likeshop, custom
+
+# 配置商城地址和账号
+export TEST_URL="http://your-shop-url.com"
+export TEST_USERNAME="13800138000"
+export TEST_PASSWORD="123456"
+export VERIFY_CODE="8888"  # TPshop万能验证码
+
+# 运行测试
+cd backend
+python -m pytest tests/test_login.py -v
 ```
 
-### 测试数据配置
+### 方式二：修改配置文件
 
-```json
-{
-  "case_id": "TC001",
-  "verify_code": "8888",
-  ...
+编辑 `backend/shop_config.py`，修改对应商城的配置：
+
+```python
+TPSHOP_CONFIG = {
+    "base_url": "http://your-tpshop-url.com",
+    "username": "your_username",
+    "password": "your_password",
+    "verify_code": "8888",
+    # ...
 }
 ```
 
-## 测试账号准备
+## 📦 支持的商城配置
+
+### TPshop 配置（默认）
+
+```bash
+export SHOP_TYPE="tpshop"
+export TEST_URL="http://localhost:8080"
+export TEST_USERNAME="13800138000"
+export TEST_PASSWORD="123456"
+export VERIFY_CODE="8888"
+```
+
+**TPshop 部署参考**：详见 `docs/TPSHOP_DEPLOY.md`
+
+### ShopXO 配置
+
+```bash
+export SHOP_TYPE="shopxo"
+export TEST_URL="http://localhost:8080"
+export TEST_USERNAME="shopxo"
+export TEST_PASSWORD="shopxo"
+```
+
+### 自定义商城配置
+
+编辑 `shop_config.py` 中的 `CUSTOM_CONFIG`，配置你的商城元素定位器。
+
+## 🚀 运行测试
+
+### 1. 安装依赖
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 2. 配置商城环境
+
+确保你有一个可访问的商城环境，并配置好环境变量或修改配置文件。
+
+### 3. 运行测试
+
+```bash
+# 演示模式（无需商城环境）
+python main.py --demo
+
+# 运行 pytest 测试
+pytest tests/test_login.py -v --html=reports/test_report.html
+
+# 运行 DDT 测试
+python -m pytest tests/test_login_ddt.py -v
+
+# 指定商城类型运行
+SHOP_TYPE=shopxo pytest tests/test_login.py -v
+```
+
+## 📁 项目结构
 
 ### 方式一：在 TPshop 前台注册
 
