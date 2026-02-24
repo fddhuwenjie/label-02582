@@ -43,6 +43,16 @@ docker run -d -p 8080:80 --name tpshop tpshop/tpshop:latest
 
 如果官方镜像不可用，可参考 `docs/TPSHOP_DEPLOY.md` 手动部署。
 
+## ⚠️ 关于测试截图和报告
+
+**重要说明**：
+
+1. **截图目录** (`reports/screenshots/`)：测试运行时自动生成，需要真实商城环境
+2. **测试报告** (`reports/test_report.html`)：pytest-html 自动生成，需要运行真实测试
+3. **演示模式**：`python main.py --demo` 仅展示框架结构，不执行浏览器操作
+
+本项目是一个**自动化测试框架**，截图和报告需要在配置好商城环境后运行测试才能生成。
+
 ## 🔧 快速配置
 
 ### 方式一：环境变量配置
