@@ -12,6 +12,11 @@ import os
 
 logger = logging.getLogger(__name__)
 
+# 远程Selenium配置
+SELENIUM_REMOTE_URL = os.getenv("SELENIUM_REMOTE_URL")
+DOCKER_ENV = os.getenv("DOCKER_ENV", "false").lower() == "true"
+CHROME_BIN = os.getenv("CHROME_BIN")
+
 
 class UtilsDriver:
     """
@@ -46,15 +51,40 @@ class UtilsDriver:
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-infobars')
+        options.add_argument('--remote-debugging-port=9222')
         
-        # 根据配置决定是否使用无头模式
-        if HEADLESS:
-            options.add_argument('--headless')
+        # 设置Chrome二进制路径（如果指定）
+        if CHROME_BIN:
+            options.binary_location = CHROME_BIN
+            logger.info(f"使用Chrome二进制路径: {CHROME_BIN}")
+        
+        # Docker环境特殊配置
+        if DOCKER_ENV:
+            options.add_argument('--headless=new')
+            options.add_argument('--disable-software-rasterizer')
+            logger.info("Docker环境: 启用特殊浏览器配置")
+        elif HEADLESS:
+            options.add_argument('--headless=new')
             logger.info("使用无头模式运行")
         
         try:
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
+            # 检查是否使用远程Selenium
+            if SELENIUM_REMOTE_URL:
+                logger.info(f"使用远程Selenium驱动: {SELENIUM_REMOTE_URL}")
+                driver = webdriver.Remote(
+                    command_executor=SELENIUM_REMOTE_URL,
+                    options=options
+                )
+            else:
+                # 本地Chrome驱动
+                if DOCKER_ENV:
+                    # Docker内使用系统安装的ChromeDriver
+                    chrome_driver_path = os.getenv("CHROME_DRIVER_PATH", "/usr/bin/chromedriver")
+                    logger.info(f"使用系统ChromeDriver: {chrome_driver_path}")
+                    service = Service(chrome_driver_path)
+                else:
+                    service = Service(ChromeDriverManager().install())
+                driver = webdriver.Chrome(service=service, options=options)
             
             # 设置隐式等待
             driver.implicitly_wait(IMPLICIT_WAIT)

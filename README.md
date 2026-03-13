@@ -393,3 +393,194 @@ UNIVERSAL_VERIFY_CODE = os.getenv("VERIFY_CODE", "8888")
 - pytest + pytest-html + pytest-cov
 - DDT (Data-Driven Tests)
 - WebDriver Manager
+
+---
+
+## 🐳 Docker 部署
+
+### 快速开始
+
+#### 1. 构建 Docker 镜像
+
+```bash
+docker build -t test-framework:latest .
+```
+
+#### 2. 演示模式（无需商城环境）
+
+```bash
+docker run --rm test-framework:latest --demo
+```
+
+#### 3. 运行真实测试（需要商城环境）
+
+```bash
+# 使用 host 网络模式（商城在本地运行时）
+docker run --rm \
+  --network host \
+  -e TEST_URL=http://localhost:8080 \
+  -e TEST_USERNAME=13800138000 \
+  -e TEST_PASSWORD=123456 \
+  -e VERIFY_CODE=8888 \
+  -v $(pwd)/backend/reports:/app/reports \
+  test-framework:latest --test
+```
+
+---
+
+### Docker 命令详解
+
+#### 演示模式
+
+```bash
+# 默认命令（等同于 --demo）
+docker run --rm test-framework:latest
+
+# 显式指定演示模式
+docker run --rm test-framework:latest --demo
+```
+
+#### 运行 pytest 测试
+
+```bash
+# 运行 pytest 参数化测试
+docker run --rm \
+  --network host \
+  -e TEST_URL=http://localhost:8080 \
+  -e SHOP_TYPE=tpshop \
+  -v $(pwd)/backend/reports:/app/reports \
+  test-framework:latest -m pytest tests/test_login.py -v --html=reports/test_report.html
+```
+
+#### 运行 DDT 测试
+
+```bash
+docker run --rm \
+  --network host \
+  -e TEST_URL=http://localhost:8080 \
+  -v $(pwd)/backend/reports:/app/reports \
+  test-framework:latest -m pytest tests/test_login_ddt.py -v
+```
+
+#### 检查 Chrome 浏览器
+
+```bash
+docker run --rm test-framework:latest --check-chrome
+```
+
+#### 交互模式（调试用）
+
+```bash
+docker run --rm -it \
+  --network host \
+  -v $(pwd)/backend/reports:/app/reports \
+  --entrypoint /bin/bash \
+  test-framework:latest
+```
+
+---
+
+### 使用 docker-compose
+
+项目根目录提供了 `docker-compose.yml`，包含多种运行配置：
+
+```bash
+# 构建镜像
+docker compose build
+
+# 演示模式
+docker compose run --rm test-demo
+
+# 运行 pytest 测试
+TEST_URL=http://localhost:8080 docker compose run --rm test-pytest
+
+# 运行 DDT 测试
+TEST_URL=http://localhost:8080 docker compose run --rm test-ddt
+
+# 进入交互 shell
+docker compose run --rm test-shell
+
+# 使用 Selenium Grid 分布式测试
+docker compose up -d selenium-chrome
+TEST_URL=http://localhost:8080 docker compose run --rm test-remote
+
+# 查看 Selenium Grid 控制台（VNC）
+# 访问 http://localhost:7900，密码: secret
+
+# 停止所有服务
+docker compose down
+```
+
+---
+
+### 使用便捷脚本
+
+项目提供了 `docker/run_tests.sh` 脚本简化操作：
+
+```bash
+# 设置执行权限
+chmod +x docker/run_tests.sh
+
+# 演示模式
+./docker/run_tests.sh --demo
+
+# 运行测试（需要配置商城地址）
+TEST_URL=http://localhost:8080 ./docker/run_tests.sh --test
+
+# 运行 pytest 测试
+TEST_URL=http://localhost:8080 ./docker/run_tests.sh --pytest
+
+# 运行 DDT 测试
+TEST_URL=http://localhost:8080 ./docker/run_tests.sh --ddt
+
+# 只构建镜像
+./docker/run_tests.sh --build
+
+# 清理 Docker 资源
+./docker/run_tests.sh --clean
+
+# 显示帮助
+./docker/run_tests.sh --help
+```
+
+---
+
+### Docker 环境变量
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| `TEST_URL` | 商城地址 | `http://localhost:8080` |
+| `TEST_USERNAME` | 测试用户名 | `13800138000` |
+| `TEST_PASSWORD` | 测试密码 | `123456` |
+| `VERIFY_CODE` | 验证码 | `8888` |
+| `SHOP_TYPE` | 商城类型 | `tpshop` |
+| `HEADLESS` | 是否无头模式 | `true` |
+| `SELENIUM_REMOTE_URL` | 远程 Selenium 地址 | - |
+
+---
+
+### 网络配置说明
+
+1. **本地商城测试**：使用 `--network host` 让容器可以访问本地运行的商城服务
+
+2. **远程商城测试**：无需 `--network host`，直接设置 `TEST_URL` 为远程地址
+
+3. **Selenium Grid**：使用 `selenium-chrome` 服务进行分布式测试
+
+---
+
+### 多架构支持
+
+Docker 镜像支持 `amd64` 和 `arm64` 架构（Apple Silicon），使用 Chromium 浏览器实现跨架构兼容。
+
+---
+
+### 故障排除
+
+1. **Chrome 启动失败**：确保容器有足够的共享内存，可添加 `--shm-size=2g` 参数
+
+2. **无法访问本地商城**：使用 `host.docker.internal` 替代 `localhost`（Windows/macOS）
+
+3. **中文显示乱码**：镜像已安装中文字体 `fonts-wqy-zenhei` 和 `fonts-noto-cjk`
+
+4. **权限问题**：确保 reports 目录有写入权限
