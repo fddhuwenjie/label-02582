@@ -37,7 +37,7 @@ class UtilsDriver:
         初始化浏览器驱动
         :return: WebDriver实例
         """
-        logger.info("初始化 Chrome 浏览器驱动...")
+        logger.info("初始化 Chrome/Chromium 浏览器驱动...")
         
         options = Options()
         options.add_argument('--start-maximized')
@@ -47,13 +47,25 @@ class UtilsDriver:
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-infobars')
         
+        # 从环境变量读取Chrome二进制文件路径（支持Docker中的Chromium）
+        chrome_bin = os.getenv('CHROME_BIN')
+        if chrome_bin:
+            options.binary_location = chrome_bin
+            logger.info(f"使用自定义Chrome二进制文件: {chrome_bin}")
+        
         # 根据配置决定是否使用无头模式
         if HEADLESS:
-            options.add_argument('--headless')
+            options.add_argument('--headless=new')
             logger.info("使用无头模式运行")
         
         try:
-            service = Service(ChromeDriverManager().install())
+            # 从环境变量读取ChromeDriver路径
+            chromedriver_path = os.getenv('CHROMEDRIVER_PATH')
+            if chromedriver_path:
+                service = Service(chromedriver_path)
+                logger.info(f"使用自定义ChromeDriver: {chromedriver_path}")
+            else:
+                service = Service(ChromeDriverManager().install())
             driver = webdriver.Chrome(service=service, options=options)
             
             # 设置隐式等待
