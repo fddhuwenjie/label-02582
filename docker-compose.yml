@@ -1,0 +1,69 @@
+# Docker Compose 配置文件
+# 用于快速部署 TPshop 自动化测试环境
+
+services:
+  # 自动化测试服务（默认构建，测试模式使用）
+  tpshop-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tpshop-test:latest
+    container_name: tpshop-automation-test
+    environment:
+      # 测试目标地址 - 指向 tpshop-web 服务
+      - TEST_URL=http://tpshop-web:80
+      - BROWSER=chrome
+      - HEADLESS=true
+      - TEST_USERNAME=13800138000
+      - TEST_PASSWORD=123456
+      - VERIFY_CODE=8888
+      - LOG_LEVEL=INFO
+    volumes:
+      # 挂载报告目录到宿主机
+      - ./backend/reports:/app/reports
+      # 挂载截图目录到宿主机
+      - ./backend/reports/screenshots:/app/reports/screenshots
+    networks:
+      - tpshop-network
+    depends_on:
+      tpshop-web:
+        condition: service_healthy
+
+  # TPshop 商城 Web 服务（需要用户自行部署或提供可访问的镜像）
+  # 注意：以下镜像地址可能需要登录或无法访问，请根据实际情况修改
+  # 可选方案：
+  # 1. 使用自己部署的TPshop镜像
+  # 2. 使用其他公开可用的TPshop镜像
+  # 3. 在本地手动启动TPshop服务后，修改TEST_URL指向本地地址
+  tpshop-web:
+    image: registry.cn-hangzhou.aliyuncs.com/qingfeng666/tpshop:latest
+    container_name: tpshop-web
+    ports:
+      - "8080:80"
+    networks:
+      - tpshop-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # 仅运行测试框架演示模式
+  tpshop-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tpshop-test:latest
+    container_name: tpshop-demo
+    command: ["python", "main.py", "--demo"]
+    networks:
+      - tpshop-network
+
+networks:
+  tpshop-network:
+    driver: bridge
+
+volumes:
+  reports:

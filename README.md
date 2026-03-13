@@ -97,7 +97,83 @@ export TEST_PASSWORD="shopxo"
 
 编辑 `shop_config.py` 中的 `CUSTOM_CONFIG`，配置你的商城元素定位器。
 
-## 🚀 运行测试
+## 🐳 Docker 部署（推荐）
+
+使用 Docker 可以快速部署测试环境，无需手动配置 Python 和 Chrome 浏览器。
+
+### ⚠️ 重要说明：TPshop 镜像访问问题
+
+**当前配置中的 TPshop 镜像 `registry.cn-hangzhou.aliyuncs.com/qingfeng666/tpshop:latest` 可能无法访问**。
+
+请根据以下方案解决：
+
+1. **方案一：使用自定义 TPshop 镜像**
+   - 自行部署 TPshop 商城并构建 Docker 镜像
+   - 修改 `docker-compose.yml` 中的 `image` 字段为你的镜像地址
+
+2. **方案二：本地手动启动 TPshop**
+   - 在本地手动启动 TPshop 服务（如使用 phpStudy、XAMPP 等）
+   - 修改 `docker-compose.yml` 中 `TEST_URL` 为本地地址（如 `http://host.docker.internal:8080`）
+   - 或使用环境变量覆盖：`-e TEST_URL=http://host.docker.internal:8080`
+
+3. **方案三：仅运行测试框架演示模式**
+   - 无需 TPshop 镜像，直接运行演示模式
+   - 命令：`./docker-run.sh demo` 或 `docker compose run --rm --profile demo tpshop-demo`
+
+### 方式一：使用启动脚本（推荐）
+
+```bash
+# 1. 构建镜像并启动服务运行测试
+./docker-run.sh all
+
+# 2. 其他常用命令
+./docker-run.sh build      # 仅构建镜像
+./docker-run.sh start      # 启动 TPshop Web 服务
+./docker-run.sh test       # 运行自动化测试
+./docker-run.sh demo       # 演示模式（查看框架结构）
+./docker-run.sh logs       # 查看日志
+./docker-run.sh stop       # 停止服务
+./docker-run.sh clean      # 清理资源
+```
+
+### 方式二：使用 docker compose 命令
+
+```bash
+# 构建镜像
+docker compose build
+
+# 启动 TPshop Web 服务
+docker compose up -d tpshop-web
+
+# 运行自动化测试（需要Web服务已启动）
+docker compose run --rm tpshop-test
+
+# 运行演示模式
+docker compose run --rm tpshop-demo
+
+# 一键启动Web服务并运行测试
+docker compose up --abort-on-container-exit
+
+# 查看 Web 服务日志
+docker compose logs -f tpshop-web
+
+# 停止服务
+docker compose down
+```
+
+### Docker 环境变量配置
+
+可以通过环境变量自定义测试配置：
+
+```bash
+# 自定义测试地址和账号
+docker-compose run -e TEST_URL=http://your-shop-url:8080 \
+                   -e TEST_USERNAME=your_phone \
+                   -e TEST_PASSWORD=your_password \
+                   --rm tpshop-test
+```
+
+## 🚀 本地运行测试
 
 ### 1. 安装依赖
 
@@ -209,8 +285,12 @@ export TEST_PASSWORD="你的测试密码"
 │   ├── config.py               # 配置文件
 │   ├── conftest.py             # pytest 配置
 │   ├── main.py                 # 主程序入口
-│   ├── requirements.txt
-├── README.md
+│   └── requirements.txt        # Python依赖
+├── Dockerfile                  # Docker镜像构建文件
+├── docker-compose.yml          # Docker Compose编排配置
+├── docker-run.sh               # Docker启动脚本
+├── .gitignore                  # Git忽略配置
+└── README.md                   # 项目说明文档
 ```
 
 ## 环境配置
