@@ -17,7 +17,7 @@
 ### 测试环境类型
 
 1. **真实环境测试**（推荐）
-   - 部署 TPshop 商城（Docker 或本地）
+   - 部署 TPshop 商城（本地）
    - 配置万能验证码
    - 创建测试账号
    - 运行完整测试用例
@@ -26,22 +26,6 @@
    - 运行 `python main.py --demo`
    - 查看框架结构和设计说明
    - 不执行实际浏览器操作
-
-### TPshop Docker 部署（推荐）
-
-```bash
-# 1. 拉取 TPshop Docker 镜像
-docker pull tpshop/tpshop:latest
-
-# 2. 启动容器
-docker run -d -p 8080:80 --name tpshop tpshop/tpshop:latest
-
-# 3. 访问 http://localhost:8080 完成安装
-# 4. 后台配置万能验证码为 8888
-# 5. 注册测试账号 13800138000/123456
-```
-
-如果官方镜像不可用，可参考 `docs/TPSHOP_DEPLOY.md` 手动部署。
 
 ## ⚠️ 关于测试截图和报告
 
@@ -226,9 +210,7 @@ export TEST_PASSWORD="你的测试密码"
 │   ├── conftest.py             # pytest 配置
 │   ├── main.py                 # 主程序入口
 │   ├── requirements.txt
-│   └── Dockerfile
-├── docker-compose.yml
-└── README.md
+├── README.md
 ```
 
 ## 环境配置
@@ -238,7 +220,7 @@ export TEST_PASSWORD="你的测试密码"
 详见 `backend/docs/TPSHOP_DEPLOY.md`
 
 简要步骤：
-1. 使用 phpStudy 或 Docker 部署 TPshop
+1. 使用 phpStudy 部署 TPshop
 2. 配置万能验证码 `8888`
 3. 创建测试账号
 
@@ -256,13 +238,7 @@ export HEADLESS="false"                     # 是否无头模式
 
 ## 运行测试
 
-### 方式一：Docker 运行（演示模式）
-
-```bash
-docker compose up --build
-```
-
-### 方式二：本地运行
+### 本地运行
 
 ```bash
 cd backend
@@ -417,4 +393,3 @@ UNIVERSAL_VERIFY_CODE = os.getenv("VERIFY_CODE", "8888")
 - pytest + pytest-html + pytest-cov
 - DDT (Data-Driven Tests)
 - WebDriver Manager
-- Docker
